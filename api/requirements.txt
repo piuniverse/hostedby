@@ -1,0 +1,15 @@
+# API Server
+fastapi
+uvicorn[standard]
+pydantic[email]
+
+requests
+
+# Database
+motor
+dnspython
+
+# Development
+pip-tools
+black
+flake8
