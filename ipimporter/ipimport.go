@@ -11,14 +11,6 @@ import (
 	"os"
 )
 
-type IpObj struct {
-	Id            string
-	Ip            string
-	Url           string
-	Type          string
-	CloudPlatform string
-}
-
 type GoogleCloudFile struct {
 	SyncToken    string `json:"syncToken"`
 	CreationTime string `json:"creationTime"`
@@ -85,6 +77,7 @@ func googleAsJson(DownloadFilePath string) (fileOut GoogleCloudFile) {
 
 func amazonAsJson(DownloadFilePath string) (fileOut AmazonWebServicesFile) {
 	// Open downloaded file and return as json
+
 	jsonFile, _ := os.Open(DownloadFilePath)
 	defer jsonFile.Close()
 	byteValue, _ := ioutil.ReadAll(jsonFile)
@@ -94,9 +87,7 @@ func amazonAsJson(DownloadFilePath string) (fileOut AmazonWebServicesFile) {
 }
 func ExpandCidr(cidr string) (ips []netip.Addr, err error) {
 	//parse a cidr and return all the ip addresses
-
 	prefix, err := netip.ParsePrefix(cidr)
-
 	ip_addr := prefix.Addr()
 	for {
 		ips = append(ips, ip_addr)
@@ -106,18 +97,6 @@ func ExpandCidr(cidr string) (ips []netip.Addr, err error) {
 		}
 	}
 	return ips, err
-}
-
-func ExtractCidrPrefixes(IpsJson GoogleCloudFile) (Ipv4Prefixes []string) {
-	//return IPv4 CIDRs with duplicates removed
-	for _, val := range IpsJson.Prefixes {
-		exists := Str_in_slice(val.Ipv4Prefix, Ipv4Prefixes)
-		if exists == false {
-			Ipv4Prefixes = append(Ipv4Prefixes, val.Ipv4Prefix)
-		}
-	}
-
-	return Ipv4Prefixes
 }
 
 func Hash(s string) uint32 {

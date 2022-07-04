@@ -1,7 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"net/netip"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"golang.org/x/sync/semaphore"
 )
 
 func ipfiles() []Ipfile {
@@ -24,27 +32,40 @@ func ipfiles() []Ipfile {
 		CloudPlatform:    "google",
 	}
 
-	return []Ipfile{googleGeneral, googleCloudPlatform, amazonWebServices}
+	return []Ipfile{googleGeneral, amazonWebServices, googleCloudPlatform}
 }
 
 func main() {
+	var (
+		client   *mongo.Client
+		mongoURL = "mongodb://mongo:mongo@localhost:27017"
+	)
 
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mongoURL))
+	if err != nil {
+		panic(err)
+	}
+
+	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
+		panic(err)
+	}
+
+	collection_ips := client.Database("ips").Collection("col_ips")
 	for _, ipfile := range ipfiles() {
 		ipfile.Download()
 
 		var jsonObj interface{}
-		var ips []IpObj
+		var cidrs []string
 
 		if ipfile.CloudPlatform == "aws" {
 			jsonObj = amazonAsJson(ipfile.DownloadFilePath)
 			json := jsonObj.(AmazonWebServicesFile)
+			fmt.Println("Found %i Cidrs from %i", len(json.Prefixes), ipfile.CloudPlatform)
 			for _, val := range json.Prefixes {
-				ips = append(ips, IpObj{
-					Ip:            val.IPPrefix,
-					Url:           ipfile.Url,
-					Type:          "IPv4",
-					CloudPlatform: ipfile.CloudPlatform,
-				})
+				exists := Str_in_slice(val.IPPrefix, cidrs)
+				if exists == false {
+					cidrs = append(cidrs, val.IPPrefix)
+				}
 			}
 		}
 
@@ -52,26 +73,47 @@ func main() {
 			jsonObj = googleAsJson(ipfile.DownloadFilePath)
 			json := jsonObj.(GoogleCloudFile)
 			for _, val := range json.Prefixes {
-				var IpAddr string
-				var IpType string
+				var cidr string
 				if len(val.Ipv4Prefix) > 0 {
-					IpAddr = val.Ipv4Prefix
-					IpType = "IPv4"
-				} else {
-					IpAddr = val.Ipv6Prefix
-					IpType = "IPv6"
+					cidr = val.Ipv4Prefix
 				}
-				ips = append(ips, IpObj{
-					Ip:            IpAddr,
-					Url:           ipfile.Url,
-					Type:          IpType,
-					CloudPlatform: ipfile.CloudPlatform,
-				})
+				// } else {
+				// 	cidr = val.Ipv6Prefix
+				// }
+				exists := Str_in_slice(cidr, cidrs)
+
+				if exists == false {
+					cidrs = append(cidrs, cidr)
+				}
 			}
 		}
 
-		for _, ip := range ips {
-			fmt.Println(ip)
+		//Create a slice to expand all the IP addresses that are valid to each Cidr.
+		// 81.10.20.1 , 81.10.20.2, 81.10.20.3 etc
+
+		var ipSubnets [][]netip.Addr
+
+		for _, cidr := range cidrs {
+			fmt.Println(cidr)
+			ipSubnet, err := ExpandCidr(cidr)
+			if err != nil {
+				log.Println(err)
+			}
+			ipSubnets = append(ipSubnets, ipSubnet)
+
+		}
+
+		sem := semaphore.NewWeighted(10)
+
+		//Add the IP addresses into mongo
+		for _, sn := range ipSubnets {
+			sem.Acquire(context.Background(), 1)
+			subnet := CreateSubnetBatch(sn, ipfile.Url, ipfile.CloudPlatform)
+			go func() {
+				//			defer wg.Done()
+				InsertMany(subnet, collection_ips)
+				sem.Release(1)
+			}()
 		}
 	}
 
