@@ -29,12 +29,12 @@ func InsertOne(ip bsonIp, mongoCollection *mongo.Collection) {
 
 func InsertMany(ips []interface{}, mongoCollection *mongo.Collection) {
 	//Insert Multiple Records
-	result, err := mongoCollection.InsertMany(context.TODO(), ips)
+	_, err := mongoCollection.InsertMany(context.TODO(), ips)
 	// check for errors in the insertion
 	if err != nil {
 		log.Println(err)
 	} else {
-		fmt.Println(result)
+		//
 	}
 }
 

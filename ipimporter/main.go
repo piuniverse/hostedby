@@ -60,7 +60,7 @@ func main() {
 		if ipfile.CloudPlatform == "aws" {
 			jsonObj = amazonAsJson(ipfile.DownloadFilePath)
 			json := jsonObj.(AmazonWebServicesFile)
-			fmt.Println("Found %i Cidrs from %i", len(json.Prefixes), ipfile.CloudPlatform)
+			fmt.Printf("Found %v Cidrs from %s", len(json.Prefixes), ipfile.CloudPlatform)
 			for _, val := range json.Prefixes {
 				exists := Str_in_slice(val.IPPrefix, cidrs)
 				if exists == false {
@@ -72,6 +72,7 @@ func main() {
 		if ipfile.CloudPlatform == "google" {
 			jsonObj = googleAsJson(ipfile.DownloadFilePath)
 			json := jsonObj.(GoogleCloudFile)
+			fmt.Printf("Found %v Cidrs from %s", len(json.Prefixes), ipfile.CloudPlatform)
 			for _, val := range json.Prefixes {
 				var cidr string
 				if len(val.Ipv4Prefix) > 0 {
@@ -94,21 +95,20 @@ func main() {
 		var ipSubnets [][]netip.Addr
 
 		for _, cidr := range cidrs {
-			fmt.Println(cidr)
 			ipSubnet, err := ExpandCidr(cidr)
 			if err != nil {
 				log.Println(err)
 			}
 			ipSubnets = append(ipSubnets, ipSubnet)
-
 		}
 
-		sem := semaphore.NewWeighted(10)
+		sem := semaphore.NewWeighted(15)
 
 		//Add the IP addresses into mongo
 		for _, sn := range ipSubnets {
 			sem.Acquire(context.Background(), 1)
 			subnet := CreateSubnetBatch(sn, ipfile.Url, ipfile.CloudPlatform)
+			fmt.Printf("Inserting %v IP addresses from %s\n", len(subnet), ipfile.CloudPlatform)
 			go func() {
 				//			defer wg.Done()
 				InsertMany(subnet, collection_ips)
