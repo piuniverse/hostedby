@@ -1,5 +1,15 @@
 version: '3.9'
 services:
+  importer:
+    platform: linux/amd64
+    build:
+      context: ./ipimporter
+      dockerfile: ./Dockerfile-Importer
+    command: /ipimporter/ipimporter
+    depends_on: 
+      - mongo
+    networks:
+      - app_network
   mongo:
     image: mongo
     ports:

@@ -110,7 +110,6 @@ func main() {
 			subnet := CreateSubnetBatch(sn, ipfile.Url, ipfile.CloudPlatform)
 			fmt.Printf("Inserting %v IP addresses from %s\n", len(subnet), ipfile.CloudPlatform)
 			go func() {
-				//			defer wg.Done()
 				InsertMany(subnet, collection_ips)
 				sem.Release(1)
 			}()
