@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/netip"
+	"os"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -36,9 +37,15 @@ func ipfiles() []Ipfile {
 }
 
 func main() {
+
+	MONGOHOST := os.Getenv("MONGOHOST")
+	if MONGOHOST == "" {
+		MONGOHOST = "localhost"
+	}
+
 	var (
 		client   *mongo.Client
-		mongoURL = "mongodb://mongo:mongo@localhost:27017"
+		mongoURL = fmt.Sprintf("mongodb://mongo:mongo@%s:27017", MONGOHOST)
 	)
 
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mongoURL))
