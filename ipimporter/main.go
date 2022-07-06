@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/netip"
 	"os"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,22 +17,22 @@ func ipfiles() []Ipfile {
 	googleCloudPlatform := Ipfile{
 		DownloadFilePath: "google-cloud.json",
 		Url:              "https://www.gstatic.com/ipranges/cloud.json",
-		CloudPlatform:    "Google",
-	}
-
-	amazonWebServices := Ipfile{
-		DownloadFilePath: "aws-ips.json",
-		Url:              "https://ip-ranges.amazonaws.com/ip-ranges.json",
-		CloudPlatform:    "aws",
-	}
-
-	googleGeneral := Ipfile{
-		DownloadFilePath: "goog.json",
-		Url:              "https://www.gstatic.com/ipranges/goog.json",
 		CloudPlatform:    "google",
 	}
 
-	return []Ipfile{googleGeneral, amazonWebServices, googleCloudPlatform}
+	// amazonWebServices := Ipfile{
+	// 	DownloadFilePath: "aws-ips.json",
+	// 	Url:              "https://ip-ranges.amazonaws.com/ip-ranges.json",
+	// 	CloudPlatform:    "aws",
+	// }
+
+	// googleGeneral := Ipfile{
+	// 	DownloadFilePath: "goog.json",
+	// 	Url:              "https://www.gstatic.com/ipranges/goog.json",
+	// 	CloudPlatform:    "google",
+	// }
+
+	return []Ipfile{googleCloudPlatform}
 }
 
 func main() {
@@ -99,28 +98,23 @@ func main() {
 		//Create a slice to expand all the IP addresses that are valid to each Cidr.
 		// 81.10.20.1 , 81.10.20.2, 81.10.20.3 etc
 
-		var ipSubnets [][]netip.Addr
-
+		//	var ipSubnets [][]netip.Addr
+		sem := semaphore.NewWeighted(1)
 		for _, cidr := range cidrs {
-			ipSubnet, err := ExpandCidr(cidr)
+			sem.Acquire(context.Background(), 1)
+			expandedcidr, err := ExpandCidr(cidr)
 			if err != nil {
 				log.Println(err)
 			}
-			ipSubnets = append(ipSubnets, ipSubnet)
-		}
-
-		sem := semaphore.NewWeighted(15)
-
-		//Add the IP addresses into mongo
-		for _, sn := range ipSubnets {
-			sem.Acquire(context.Background(), 1)
-			subnet := CreateSubnetBatch(sn, ipfile.Url, ipfile.CloudPlatform)
-			fmt.Printf("Inserting %v IP addresses from %s\n", len(subnet), ipfile.CloudPlatform)
+			subnet := CreateSubnetBatch(expandedcidr, ipfile.Url, ipfile.CloudPlatform)
+			fmt.Printf("Inserting %v IP addresses from %s\n", len(subnet), ipfile.Url)
 			go func() {
 				InsertMany(subnet, collection_ips)
 				sem.Release(1)
+				subnet = nil
 			}()
 		}
+
 	}
 
 }
