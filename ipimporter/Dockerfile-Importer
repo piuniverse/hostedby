@@ -1,0 +1,25 @@
+FROM --platform=linux/amd64 golang:alpine AS builder
+
+LABEL stage=gobuilder
+
+ENV CGO_ENABLED 0
+ENV GOOS linux
+ENV GOARCH amd64
+
+WORKDIR /importer
+
+ADD go.mod .
+ADD go.sum .
+RUN go mod download
+COPY . .
+RUN go build -ldflags="-s -w" -o /app/ipimporter .
+
+
+FROM --platform=linux/amd64 scratch
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+WORKDIR /app
+COPY --from=builder /app/ipimporter  /app/ipimporter 
+
+# Run the executable
+CMD ["/app/ipimporter "]

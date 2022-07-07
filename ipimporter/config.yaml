@@ -1,9 +1,9 @@
-- cloudplatform: aws 
-  url: https://ip-ranges.amazonaws.com/ip-ranges.json
-  downloadfilepath: "aws-ips.json"
-- cloudplatform: aws 
+- cloudplatform: google 
   url: https://www.gstatic.com/ipranges/cloud.json
   downloadfilepath: "google-cloud.json"
-- cloudplatform: google 
-  url: https://www.gstatic.com/ipranges/goog.json
-  downloadfilepath: "goog.json"
+# - cloudplatform: google 
+#   url: https://www.gstatic.com/ipranges/goog.json
+#   downloadfilepath: "goog.json"
+# - cloudplatform: aws 
+#   url: https://ip-ranges.amazonaws.com/ip-ranges.json
+#   downloadfilepath: "aws-ips.json"

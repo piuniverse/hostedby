@@ -12,6 +12,8 @@ services:
       - mongo
     networks:
       - app_network
+    volumes:
+        - ./ipimporter/config.yaml:/app/config.yaml
   mongo:
     image: mongo
     ports:

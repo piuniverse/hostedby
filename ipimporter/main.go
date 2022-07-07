@@ -94,7 +94,7 @@ func main() {
 		//Create a slice to expand all the IP addresses that are valid to each Cidr.
 		// 81.10.20.1 , 81.10.20.2, 81.10.20.3 etc
 
-		sem := semaphore.NewWeighted(1)
+		sem := semaphore.NewWeighted(2)
 		for _, cidr := range cidrs {
 			sem.Acquire(context.Background(), 1)
 			expandedcidr, err := ExpandCidr(cidr)
