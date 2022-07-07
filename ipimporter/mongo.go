@@ -27,15 +27,16 @@ func InsertOne(ip bsonIp, mongoCollection *mongo.Collection) {
 	}
 }
 
-func InsertMany(ips []interface{}, mongoCollection *mongo.Collection) {
+func InsertMany(ips []interface{}, mongoCollection *mongo.Collection) []interface{} {
 	//Insert Multiple Records
-	_, err := mongoCollection.InsertMany(context.TODO(), ips)
+	insert, err := mongoCollection.InsertMany(context.TODO(), ips)
 	// check for errors in the insertion
 	if err != nil {
 		log.Println(err)
-	} else {
-		//
+		insert.InsertedIDs = nil
 	}
+
+	return insert.InsertedIDs
 }
 
 func CreateSubnetBatch(IpsIn []netip.Addr, Url string, cloudPlatform string) (IpsOut []interface{}) {

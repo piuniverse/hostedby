@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 
@@ -10,29 +11,24 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"golang.org/x/sync/semaphore"
+	"gopkg.in/yaml.v2"
 )
 
 func ipfiles() []Ipfile {
+	//Load the IP files
+	var ipfiles []Ipfile
 
-	googleCloudPlatform := Ipfile{
-		DownloadFilePath: "google-cloud.json",
-		Url:              "https://www.gstatic.com/ipranges/cloud.json",
-		CloudPlatform:    "google",
+	source, err := ioutil.ReadFile("config.yaml")
+	if err != nil {
+		fmt.Printf("failed reading config file: %v\n", err)
 	}
 
-	// amazonWebServices := Ipfile{
-	// 	DownloadFilePath: "aws-ips.json",
-	// 	Url:              "https://ip-ranges.amazonaws.com/ip-ranges.json",
-	// 	CloudPlatform:    "aws",
-	// }
+	err = yaml.Unmarshal(source, &ipfiles)
+	if err != nil {
+		fmt.Printf("error: %v\n", err)
+	}
 
-	// googleGeneral := Ipfile{
-	// 	DownloadFilePath: "goog.json",
-	// 	Url:              "https://www.gstatic.com/ipranges/goog.json",
-	// 	CloudPlatform:    "google",
-	// }
-
-	return []Ipfile{googleCloudPlatform}
+	return ipfiles
 }
 
 func main() {
@@ -98,7 +94,6 @@ func main() {
 		//Create a slice to expand all the IP addresses that are valid to each Cidr.
 		// 81.10.20.1 , 81.10.20.2, 81.10.20.3 etc
 
-		//	var ipSubnets [][]netip.Addr
 		sem := semaphore.NewWeighted(1)
 		for _, cidr := range cidrs {
 			sem.Acquire(context.Background(), 1)
@@ -107,6 +102,7 @@ func main() {
 				log.Println(err)
 			}
 			subnet := CreateSubnetBatch(expandedcidr, ipfile.Url, ipfile.CloudPlatform)
+			expandedcidr = nil
 			fmt.Printf("Inserting %v IP addresses from %s\n", len(subnet), ipfile.Url)
 			go func() {
 				InsertMany(subnet, collection_ips)
@@ -114,7 +110,6 @@ func main() {
 				subnet = nil
 			}()
 		}
-
+		ipfile = Ipfile{}
 	}
-
 }
