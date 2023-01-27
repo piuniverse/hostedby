@@ -1,7 +1,7 @@
 
 ## hostedby
 
-This is a simple API that takes an IP address in string format and searches for it in a database.  If it finds the IP Address in the database it will return a json response. The example an IP address was submitted and the database returned information purtaining to it's owner. Which in this was case Amazon Web Services.
+Hostedby is a simple REST API written in GoLang that takes an IP address in string format and searches for it in a SQLite database.  If it finds the IP Address in the database it will return a json response. The example response shows an AWS IP address found in the database.
 
 ```
 {
