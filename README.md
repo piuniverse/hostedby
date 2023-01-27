@@ -1,13 +1,25 @@
 
 ## About The hostedby
 
-This is a simple API for finding and returning data on specific IPs.
+This is a simple API that takes an IP address in string format and searches for it in a database.  If it finds the IP Address in the database it will return a json response:
+
+```
+{
+   "Net":"52.93.153.170/32",
+   "Start_ip":878549418,
+   "End_ip":878549418,
+   "Url":"https://ip-ranges.amazonaws.com/ip-ranges.json",
+   "Cloudplatform":"aws",
+   "Iptype":"IPv4",
+   "Error":"None"
+ }
+```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ### Built With
-<TODO>
-
+Golang
+SQLite
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- GETTING STARTED -->
