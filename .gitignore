@@ -25,3 +25,5 @@ go.work
 .env
 
 *.json
+
+.DS_Store
