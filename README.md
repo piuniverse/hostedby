@@ -1,7 +1,7 @@
 
-## About The hostedby
+## hostedby
 
-This is a simple API that takes an IP address in string format and searches for it in a database.  If it finds the IP Address in the database it will return a json response:
+This is a simple API that takes an IP address in string format and searches for it in a database.  If it finds the IP Address in the database it will return a json response. The example an IP address was submitted and the database returned information purtaining to it's owner. Which in the case Amazon Web Services.
 
 ```
 {
@@ -18,8 +18,8 @@ This is a simple API that takes an IP address in string format and searches for 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ### Built With
-Golang
-SQLite
+- Golang
+- SQLite
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- GETTING STARTED -->
