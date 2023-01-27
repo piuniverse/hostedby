@@ -6,9 +6,7 @@ This is a simple API for finding and returning data on specific IPs.
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ### Built With
-
-* [Fast API](https://fastapi.tiangolo.com/)
-* [MongoDB](https://https://www.mongodb.com/)
+<TODO>
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -26,12 +24,12 @@ The following instructions list how to install the API locally using docker and 
    ```
 3. Run Docker-compose
    ```sh
-   cd <DIRECTORY WHERE YOU CLONED THE REPO>
+   cd hostedby
    docker-compose up
    ```
-4. Test the API - curl example shown your browser or postman works too.
+4. Test the API - curl example shown, although your browser or postman works too.
    ```sh
-   curl http://http://localhost:9000/ip/52.93.153.170
+   curl http://localhost:8080/findip?ip=52.93.153.170
    ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>

@@ -1,0 +1,85 @@
+
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: '${{ secrets.PROJECT_ID }}'
+  GAR_LOCATION: '${{ secrets.GAR_LOCATION }}'
+  REPOSITORY: '${{ secrets.REPOSITORY }}' 
+  SERVICE: '${{ secrets.SERVICE }}' 
+  REGION: '${{ secrets.REGION }}' 
+
+jobs:
+  deploy:
+    # Add 'id-token' with the intended permissions for workload identity federation
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout CloudIP
+        uses: actions/checkout@v2
+        with:
+          repository: stclaird/cloudIPtoDB
+      - name: Create SQLite File
+        run: |-
+          ls -lasi
+          cd cmd/main/
+          go build -o cloudIPtoDB -v 
+          chmod +x cloudIPtoDB
+          ./cloudIPtoDB
+
+      - name: Temporarily save SQLite db
+        uses: actions/upload-artifact@v2
+        with:
+          name: db-artifact
+          path: cmd/main/output/cloudIP.sqlite3.db
+          retention-days: 1
+
+      - name: Checkout HostedBy
+        uses: actions/checkout@v2
+      - name: Google Auth
+        id: auth
+        uses: 'google-github-actions/auth@v0'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}' 
+          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}' 
+
+      # Authenticate Docker to Google Cloud Artifact Registry
+      - name: Docker Auth
+        id: docker-auth
+        uses: 'docker/login-action@v1'
+        with:
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.access_token }}'
+          registry: '${{ env.GAR_LOCATION }}-docker.pkg.dev'
+      
+      - name: Retrieve saved SQLite db
+        uses: actions/download-artifact@v2
+        with:
+          name: db-artifact
+          path: ${GITHUB_WORKSPACE}/cmd/api//cloudIP.sqlite3.db
+
+      - name: Build and Push Container
+        run: |-
+          docker build -t "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}" ./
+          docker push "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}"
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v0
+        with:
+          service: ${{ env.SERVICE }}
+          region: ${{ env.REGION }}
+          # NOTE: If using a pre-built image, update the image name here
+          image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}
+
+      # If required, use the Cloud Run url output in later steps
+      - name: Show Output
+        run: echo ${{ steps.deploy.outputs.url }}
