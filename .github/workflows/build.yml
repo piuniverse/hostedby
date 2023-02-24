@@ -3,7 +3,7 @@ name: Deploy to Cloud Run
 
 on:
   schedule:
-    - cron:  '55 * * * *'
+    - cron:  '0 0 1 * *'
 env:
   PROJECT_ID: '${{ secrets.PROJECT_ID }}'
   GAR_LOCATION: '${{ secrets.GAR_LOCATION }}'
