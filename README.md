@@ -39,7 +39,7 @@ The following instructions list how to install the API locally using docker and 
    cd hostedby
    docker-compose up
    ```
-4. Test the API - curl example shown, although your browser or postman works too.
+4. Test the API - curl example shown, although a web browser or postman should work also.
    ```sh
    curl http://localhost:8080/findip?ip=52.93.153.170
    ```
