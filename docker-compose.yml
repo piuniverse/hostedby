@@ -3,7 +3,7 @@ services:
   api:
     build:
       context: ./
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile-dockercompose
     container_name: api
     command: /project/api
     ports:

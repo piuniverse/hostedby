@@ -50,6 +50,9 @@ func Find(w http.ResponseWriter, r *http.Request) {
 
 	jData, _ := json.Marshal(Data)
 
+	if Data.Net == "" {
+		w.WriteHeader(http.StatusNotFound)
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jData)
 }
