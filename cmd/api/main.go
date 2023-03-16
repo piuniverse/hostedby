@@ -11,7 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/stclaird/hostedby/pkg/model"
+	"github.com/piuniverse/hostedby/pkg/model"
 )
 
 func HealthCheck(w http.ResponseWriter, r *http.Request) {

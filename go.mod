@@ -1,4 +1,4 @@
-module github.com/stclaird/hostedby
+module github.com/piuniverse/hostedby
 
 go 1.18
 
