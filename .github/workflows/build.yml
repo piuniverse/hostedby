@@ -4,6 +4,9 @@ name: Deploy to Cloud Run
 on:
   schedule:
     - cron:  '0 0 1 * *'
+  push:
+    branches:
+      - main
 env:
   PROJECT_ID: '${{ secrets.PROJECT_ID }}'
   GAR_LOCATION: '${{ secrets.GAR_LOCATION }}'
