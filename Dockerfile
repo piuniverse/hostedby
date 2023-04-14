@@ -14,6 +14,7 @@ RUN apk add --no-cache gcc g++ git openssh-client
 COPY go.mod /project/go.mod
 COPY go.sum /project/go.sum
 COPY pkg /project/pkg
+
 COPY /cmd/ /project/cmd
 
 WORKDIR /project/cmd/api
@@ -24,7 +25,9 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 
 WORKDIR /project/cmd/api
+RUN wget https://github.com/piuniverse/cloudIPtoDB/releases/download/v1.0.0/cloudIP.sqlite3.db -O cloudIP.sqlite3.db
 COPY --from=builder /project/cmd/api/ /project/cmd/api/
+
 
 
 ENTRYPOINT ["/project/cmd/api/server"] 
