@@ -16,8 +16,20 @@ import (
 
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	log.Println("Entering health check end point")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "API OK")
+
+	model.DB, _ = sql.Open("sqlite3", "cloudIP.sqlite3.db")
+	Data := model.NetTableExists(model.DB)
+
+	if Data == true {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "OK")
+	}
+
+	if Data == false {
+		w.WriteHeader(500)
+		fmt.Fprintf(w, "API Error. Couldn't find DB Table")
+	}
+
 }
 
 func Find(w http.ResponseWriter, r *http.Request) {
