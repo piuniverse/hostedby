@@ -55,7 +55,7 @@ jobs:
       - name: Checkout CloudIP
         uses: actions/checkout@v2
         with:
-          repository: piuniverse/cloudIPtoDB
+          repository: stclaird/cloudIPtoDB
       - name: Create SQLite File
         run: |-
           ls -lasi
