@@ -9,6 +9,32 @@ import (
 
 var DB *sql.DB
 
+type NetExists struct {
+	Type     string
+	Name     string
+	Tbl_name string
+	Rootpage string
+	Sql      string
+}
+
+func NetTableExists(db *sql.DB) bool {
+	r := NetExists{}
+	sqlStatement := `SELECT * FROM sqlite_master WHERE type = 'table' AND tbl_name = 'net';`
+
+	row := db.QueryRow(sqlStatement)
+
+	switch err := row.Scan(&r.Type, &r.Name, &r.Tbl_name, &r.Rootpage, &r.Sql); err {
+	case sql.ErrNoRows:
+		fmt.Println("No rows were returned!")
+		return false
+	case nil:
+		fmt.Println(r)
+		return true
+	default:
+		panic(err)
+	}
+}
+
 type CidrObject struct {
 	Net           string
 	Start_ip      int

@@ -27,3 +27,5 @@ go.work
 *.json
 
 .DS_Store
+
+cloudIP.sqlite3.db

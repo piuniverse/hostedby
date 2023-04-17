@@ -41,7 +41,7 @@ The following instructions list how to install the API locally using docker and 
    ```
 4. Test the API - curl example shown, although a web browser or postman should work also.
    ```sh
-   curl http://localhost:8080/findip?ip=52.93.153.170
+   curl "http://localhost:8080/findip?ip=52.93.153.170"
    ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
